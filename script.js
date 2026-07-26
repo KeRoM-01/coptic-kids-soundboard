@@ -30,11 +30,13 @@ const letters = [
     { id: "fo",      img: "26.png", label: "Ⳁ",  name: "Shai" },
     { id: "ze",      img: "27.png", label: "Ⳃ",  name: "Fai" },
     { id: "et",      img: "28.png", label: "Ⳅ",  name: "Khei" },
-    { id: "th",      img: "29.png", label: "Ϩ",  name: "Hori" },
-    { id: "io",      img: "30.png", label: "Ϫ",  name: "Janja" },
-    { id: "ka",      img: "31.png", label: "Ϭ",  name: "Chima" },
-    { id: "la",      img: "32.png", label: "Ϯ",  name: "Ti" }
+    { id: "th",      img: "29.png", label: "Ⳇ",  name: "Hori" },
+    { id: "io",      img: "30.png", label: "Ⳉ",  name: "Janja" },
+    { id: "ka",      img: "31.png", label: "Ⳋ",  name: "Chima" },
+    { id: "la",      img: "32.png", label: "Ⳍ",  name: "Ti" }
 ];
+
+const fallbackImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23fff7ed'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='%23ea580c' font-family='sans-serif'>?</text></svg>";
 
 // ============================================
 // AUDIO
@@ -61,13 +63,10 @@ function playSound(id) {
     currentAudio = sounds[id];
     if (currentAudio) {
         currentAudio.currentTime = 0;
-        currentAudio.play().catch(e => {
-            console.log("Audio play failed:", e);
-        });
+        currentAudio.play().catch(e => console.log("Audio play failed:", e));
     }
 }
 
-// Helper function to play sound effects
 function playSFX(sfx) {
     sfx.currentTime = 0;
     sfx.play().catch(e => console.log("SFX play failed:", e));
@@ -84,7 +83,7 @@ function buildSoundboard() {
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-            <img src="images/${letter.img}" class="icon" alt="${letter.name}" onerror="this.src='https://via.placeholder.com/160x160?text=${letter.label}'">
+            <img src="images/${letter.img}" class="icon" alt="${letter.name}" onerror="this.onerror=null; this.src='${fallbackImg}'">
             <span class="label">${letter.label}</span>
         `;
         card.addEventListener("click", () => {
@@ -115,10 +114,7 @@ function generateQuiz() {
     quizQuestions = shuffledLetters.slice(0, 5).map(correct => {
         const wrongs = shuffle(letters.filter(l => l.id !== correct.id)).slice(0, 2);
         const options = shuffle([correct, ...wrongs]);
-        return {
-            correct: correct,
-            options: options
-        };
+        return { correct: correct, options: options };
     });
     currentQ = 0;
     answered = false;
@@ -160,7 +156,7 @@ function showQuestion() {
         const card = document.createElement("div");
         card.className = "choice-card";
         card.innerHTML = `
-            <img src="images/${opt.img}" alt="${opt.name}" onerror="this.src='https://via.placeholder.com/150x150?text=${opt.label}'">
+            <img src="images/${opt.img}" alt="${opt.name}" onerror="this.onerror=null; this.src='${fallbackImg}'">
             <div class="choice-label">${opt.label}</div>
         `;
         card.onclick = () => selectAnswer(opt, card);
@@ -191,10 +187,7 @@ function selectAnswer(selected, cardElement) {
         resultMsg.className = "result-message good";
         playSFX(sfxCorrect);
         
-        // Disable all cards
         allCards.forEach(c => c.style.pointerEvents = "none");
-        
-        // Show Next button
         document.getElementById("nextBtn").style.display = "inline-block";
         
         if (currentQ === 4) {
@@ -210,7 +203,6 @@ function selectAnswer(selected, cardElement) {
         resultMsg.className = "result-message bad";
         playSFX(sfxWrong);
         
-        // Remove the wrong highlight after animation so they can try again
         setTimeout(() => {
             cardElement.classList.remove("wrong");
             resultMsg.textContent = "";
@@ -244,7 +236,4 @@ function nextQuestion() {
     }
 }
 
-// ============================================
-// START
-// ============================================
 buildSoundboard();
